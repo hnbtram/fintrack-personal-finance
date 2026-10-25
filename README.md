@@ -98,13 +98,7 @@ Theo yêu cầu chấm thi của Giảng viên: Mỗi thành viên phải dùng 
 
 | STT | Thành viên | Nhiệm vụ chính | Files phụ trách chính | Đóng góp |
 |---|---|---|---|---|
-| 1 | **Thành viên 1** *(Trưởng nhóm)* | Khởi tạo repo, cấu hình backend Express, Data Models, CRUD Giao dịch & Validation 2 lớp | `server.ts`, `src/types.ts`, `src/services/api.ts`, `package.json` | **25%** |
-| 2 | **Thành viên 2** | Giao diện chính React 19, Header, Form thêm/sửa giao dịch, Cụm nút demo kiểm tra lỗi, Danh sách giao dịch & Xuất CSV | `src/App.tsx`, `src/components/Header.tsx`, `src/components/TransactionModal.tsx`, `src/components/TransactionList.tsx`, `src/utils/constants.ts` | **25%** |
-| 3 | **Thành viên 3** | Biểu đồ SVG Donut & Bar Chart, Module Ngân sách, Dạng xem Lịch Chi tiêu & Lưu trữ ảnh Locket | `src/components/CalendarView.tsx`, `src/components/LocketGalleryView.tsx`, `src/components/PhotoDetailModal.tsx`, `src/components/ChartsView.tsx`, `src/components/BudgetView.tsx` | **25%** |
-| 4 | **Thành viên 4** | AI Gemini 3.8 Flash & NLP Parser, Message Queue Event Monitor (RabbitMQ), Test Suite Runner, Slide & Báo cáo | `src/components/AIQuickEntry.tsx`, `src/components/QueueMonitorModal.tsx`, `src/components/DefenseHubModal.tsx`, `README.md` | **25%** |
-
-### 🚀 Thứ tự Commit từ đầu đến cuối:
-1. **Bước 1 (Thành viên 1 bắt đầu):** Tạo repo GitHub, commit init project và backend foundation.
-2. **Bước 2 (Thành viên 2):** Pull code về, commit UI Core (App, Header, Form giao dịch, Transaction List).
-3. **Bước 3 (Thành viên 3):** Pull code về, commit Biểu đồ phân tích, Lịch chi tiêu Calendar và Ảnh Locket.
-4. **Bước 4 (Thành viên 4):** Pull code về, commit AI Smart Parser, Message Queue Monitor, Automated Test Runner và tạo **Git Tag `final`** trước giờ nộp bài.
+| 1 | **Nguyễn Yến Nhi - 24100372**  | Khởi tạo repo, cấu hình backend Express, Data Models, CRUD Giao dịch & Validation 2 lớp | `server.ts`, `src/types.ts`, `src/services/api.ts`, `package.json` | **25%** |
+| 2 | **Hoàng Nhật Bảo Trâm - 24100260** | Giao diện chính React 19, Header, Form thêm/sửa giao dịch, Cụm nút demo kiểm tra lỗi, Danh sách giao dịch & Xuất CSV | `src/App.tsx`, `src/components/Header.tsx`, `src/components/TransactionModal.tsx`, `src/components/TransactionList.tsx`, `src/utils/constants.ts` | **25%** |
+| 3 | **Nguyễn Thuỳ Dương - 24107946** | Biểu đồ SVG Donut & Bar Chart, Module Ngân sách, Dạng xem Lịch Chi tiêu & Lưu trữ ảnh Locket | `src/components/CalendarView.tsx`, `src/components/LocketGalleryView.tsx`, `src/components/PhotoDetailModal.tsx`, `src/components/ChartsView.tsx`, `src/components/BudgetView.tsx` | **25%** |
+| 4 | **Nguyễn Thị Kim Oanh - 24100459** | AI Gemini 3.8 Flash & NLP Parser, Message Queue Event Monitor (RabbitMQ), Test Suite Runner, Slide & Báo cáo | `src/components/AIQuickEntry.tsx`, `src/components/QueueMonitorModal.tsx`, `src/components/DefenseHubModal.tsx`, `README.md` | **25%** |

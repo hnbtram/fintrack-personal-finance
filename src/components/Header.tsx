@@ -24,7 +24,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAIQuick,
   onResetData,
 }) => {
-  // Format currentMonth (e.g. "2026-10" -> "Tháng 10, 2026")
   const formatMonthTitle = (mStr: string) => {
     try {
       const [year, month] = mStr.split('-');
@@ -49,106 +48,96 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between py-3.5 gap-3">
-          
-          {/* Logo & Project Tag */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                <Wallet className="w-5 h-5" />
+    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-3 py-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-[0_15px_30px_-12px_rgba(16,185,129,0.7)]">
+                <Wallet className="h-6 w-6" />
               </div>
+
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                  <h1 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl">
                     Fin<span className="text-emerald-600">Track</span>
                   </h1>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700">
                     Pro AI
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 font-medium hidden sm:block">
-                  Quản lý Chi tiêu Cá nhân • Lập trình Web Nâng cao
+                <p className="hidden text-xs font-medium text-slate-500 sm:block">
+                  Quản lý chi tiêu cá nhân • Lập trình Web Nâng cao
                 </p>
               </div>
             </div>
 
-            {/* Quick Month Selector on Mobile */}
-            <div className="flex md:hidden items-center bg-slate-100 rounded-lg p-1 text-xs">
+            <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-100/80 p-1 shadow-inner md:hidden">
               <button
                 onClick={handlePrevMonth}
-                className="p-1 hover:bg-white rounded transition text-slate-600"
+                className="rounded-xl p-1.5 text-slate-600 transition hover:bg-white hover:text-slate-900"
                 title="Tháng trước"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="px-2 font-medium text-slate-700">
-                {formatMonthTitle(currentMonth)}
-              </span>
+              <span className="px-2 text-sm font-bold text-slate-700">{formatMonthTitle(currentMonth)}</span>
               <button
                 onClick={handleNextMonth}
-                className="p-1 hover:bg-white rounded transition text-slate-600"
+                className="rounded-xl p-1.5 text-slate-600 transition hover:bg-white hover:text-slate-900"
                 title="Tháng sau"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          {/* Month Selector in Desktop */}
-          <div className="hidden md:flex items-center bg-slate-100/80 border border-slate-200 rounded-xl p-1 shadow-inner">
+          <div className="hidden items-center rounded-2xl border border-slate-200 bg-slate-100/80 p-1 shadow-inner md:flex">
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 hover:bg-white hover:text-slate-900 rounded-lg transition text-slate-600"
+              className="rounded-xl p-1.5 text-slate-600 transition hover:bg-white hover:text-slate-900"
               title="Tháng trước"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-2 px-3 py-1 font-semibold text-sm text-slate-800">
-              <Calendar className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-bold text-slate-700">
+              <Calendar className="h-4 w-4 text-emerald-600" />
               <span>{formatMonthTitle(currentMonth)}</span>
             </div>
             <button
               onClick={handleNextMonth}
-              className="p-1.5 hover:bg-white hover:text-slate-900 rounded-lg transition text-slate-600"
+              className="rounded-xl p-1.5 text-slate-600 transition hover:bg-white hover:text-slate-900"
               title="Tháng sau"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* AI Smart Entry */}
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={onOpenAIQuick}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 text-indigo-700 hover:from-purple-100 hover:to-blue-100 border border-indigo-200/80 transition-all shadow-xs hover:shadow"
-              title="Nhập nhanh bằng AI tự nhiên (ví dụ: Ăn trưa 50k)"
+              className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-violet-50 to-sky-50 px-3.5 py-2.5 text-xs font-bold text-indigo-700 shadow-[0_12px_22px_-18px_rgba(99,102,241,0.7)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_30px_-18px_rgba(99,102,241,0.8)]"
+              title="Nhập nhanh bằng AI tự nhiên"
             >
-              <Sparkles className="w-4 h-4 text-indigo-600 animate-pulse" />
+              <Sparkles className="h-4 w-4 animate-pulse text-indigo-600" />
               <span>Nhập AI</span>
             </button>
 
-            {/* Reset Demo Data */}
             <button
               onClick={onResetData}
-              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition"
-              title="Khôi phục dữ liệu mẫu ban đầu để báo cáo lại"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-800"
+              title="Khôi phục dữ liệu mẫu"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="h-4 w-4" />
             </button>
 
-            {/* Add Transaction Main Button */}
             <button
               onClick={onOpenAddModal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2.5 text-xs font-bold text-white shadow-[0_18px_30px_-18px_rgba(16,185,129,0.9)] transition hover:-translate-y-0.5 hover:from-emerald-600 hover:to-teal-600"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="h-4 w-4" />
               <span>Giao dịch mới</span>
             </button>
           </div>
-
         </div>
       </div>
     </header>

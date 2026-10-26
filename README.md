@@ -18,7 +18,6 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white)
 ![Gemini](https://img.shields.io/badge/AI-Gemini-4285F4?style=flat-square&logo=google&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
-![Claude](https://img.shields.io/badge/Code_Support-Claude_AI-D97757?style=flat-square)
 
 **Môn học:** Lập trình Web Nâng cao  
 **Đề tài:** Ứng dụng Quản lý Chi tiêu Cá nhân
@@ -34,8 +33,6 @@
 Dự án minh họa kiến trúc **Event-Driven** (hướng sự kiện) kết hợp **Microservices pattern** (mô phỏng Message Queue), xác thực bảo mật đa tầng, và tích hợp Trí tuệ Nhân tạo (AI Gemini) vào quy trình nhập liệu.
 
 🌐 **Link Website (Demo):** [https://fintrack-personal-finance-7b52.onrender.com/](https://fintrack-personal-finance-7b52.onrender.com/)
-
-> 🤖 **Ghi chú:** Quá trình phát triển, viết và tối ưu hóa các file mã nguồn trong dự án có sự hỗ trợ đắc lực từ **Claude AI**.
 
 ### ✨ Điểm nổi bật
 
@@ -175,6 +172,16 @@ npm run dev
 - **Biểu đồ cột:** `/api/stats` đang trả `dailyStats` rỗng nên biểu đồ cột theo ngày bị trống (Donut và thẻ tổng quan vẫn hoạt động tốt).
 - **Test case:** `/api/test/run` chưa trả đúng cấu trúc dữ liệu cho cửa sổ báo cáo.
 - **Tài khoản:** Chưa hỗ trợ đổi mật khẩu và quên mật khẩu.
+
+---
+
+## 8. Công cụ AI hỗ trợ
+
+| Công cụ AI | Phần việc sử dụng | Chi tiết mức độ hỗ trợ |
+|:---|:---|:---|
+| **Claude 3** | Thiết kế kiến trúc Backend & Tối ưu UI | - Hỗ trợ gợi ý cấu trúc thư mục cho dự án Full-stack (React + Express).<br>- Hỗ trợ viết các Mongoose Schema (User, Transaction, Budget).<br>- Gợi ý layout và các component UI/UX cho trang Dashboard tài chính.<br>- Hỗ trợ viết file README.md và tài liệu hướng dẫn. |
+| **Gemini**<br/>(Google AI Studio) | Tính năng AI Phân loại chi tiêu | - Hỗ trợ tích hợp thư viện `@google/genai` vào backend.<br>- Tinh chỉnh Prompt (câu lệnh) để AI trích xuất chính xác thông tin (số tiền, danh mục) từ câu nói tự nhiên tiếng Việt (VD: "Ăn sáng 30k").<br>- Sinh dữ liệu mẫu (Mock data) để test tính năng. |
+| **DeepSeek** | Debug, sửa lỗi Deploy & Logic phức tạp | - Hỗ trợ tìm nguyên nhân và sửa các lỗi TypeScript (định nghĩa type cho Request/Response).<br>- Hỗ trợ gỡ lỗi khi deploy lên Render (lỗi thiếu biến môi trường, lỗi đường dẫn tĩnh `dist/index.html`).<br>- Gợi ý thuật toán xử lý tính toán số dư ngân sách (Budget limits) và giả lập Message Queue. |
 
 <div align="center">
 <br/>

@@ -1,3 +1,136 @@
+import React from 'react';
+import {
+  Camera,
+  Heart,
+  Plus,
+  Eye,
+  Calendar,
+  Sparkles,
+  Image as ImageIcon,
+} from 'lucide-react';
+import { Transaction } from '../types';
+import { formatVND, formatDateVN, CATEGORIES } from '../utils/constants';
+
+interface LocketGalleryViewProps {
+  transactions: Transaction[];
+  onOpenPhotoModal: (tx: Transaction) => void;
+  onOpenAddModal: () => void;
+}
+
+export const LocketGalleryView: React.FC<LocketGalleryViewProps> = ({
+  transactions,
+  onOpenPhotoModal,
+  onOpenAddModal,
+}) => {
+  const photoTransactions = transactions.filter((t) => !!t.receiptImage);
+
+  return (
+    <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 p-6 text-white shadow-[0_28px_60px_-30px_rgba(245,158,11,0.9)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_24%)]" />
+        <div className="relative z-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/18 ring-1 ring-white/25 backdrop-blur-sm">
+                <Heart className="h-5 w-5 fill-white" />
+              </div>
+              <h3 className="text-xl font-black tracking-tight">Khoảnh khắc Chi tiêu • Locket Moments</h3>
+              <span className="rounded-full border border-white/25 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-50">
+                {photoTransactions.length} ảnh
+              </span>
+            </div>
+            <p className="max-w-2xl text-xs text-amber-50/90">
+              Lưu giữ hình ảnh món ăn, hóa đơn, đồ mua sắm và những khoảnh khắc chi tiêu mỗi ngày như một diary sống động.
+            </p>
+          </div>
+
+          <button
+            onClick={onOpenAddModal}
+            className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-xs font-black text-amber-700 shadow-[0_15px_30px_-18px_rgba(124,58,237,0.8)] transition hover:-translate-y-0.5"
+          >
+            <Camera className="h-4 w-4" />
+            <span>Chụp ảnh chi tiêu mới</span>
+          </button>
+        </div>
+      </div>
+
+      {photoTransactions.length === 0 ? (
+        <div className="rounded-[30px] border border-slate-200 bg-white p-12 text-center shadow-[0_22px_55px_-30px_rgba(15,23,42,0.35)]">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[22px] bg-amber-50 text-amber-600 shadow-inner">
+            <Camera className="h-8 w-8" />
+          </div>
+          <h4 className="text-base font-black text-slate-800">Chưa có bức ảnh Locket nào được lưu</h4>
+          <p className="mx-auto mt-2 max-w-lg text-xs text-slate-500">
+            Khi thêm giao dịch mới, hãy nhấn <strong>“Chụp ảnh Locket”</strong> để lưu lại món ăn, cốc cà phê, hóa đơn hoặc khoảnh khắc chi tiêu đáng nhớ.
+          </p>
+          <button
+            onClick={onOpenAddModal}
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-black text-white shadow-[0_14px_26px_-18px_rgba(245,158,11,0.9)] transition hover:bg-amber-600"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Ghi chép & chụp ảnh ngay</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          {photoTransactions.map((tx) => {
+            const meta = CATEGORIES.find((c) => c.name === tx.category);
+
+            return (
+              <div
+                key={tx.id}
+                onClick={() => onOpenPhotoModal(tx)}
+                className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_22px_46px_-32px_rgba(15,23,42,0.5)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(15,23,42,0.55)]"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-[22px] bg-slate-900">
+                  <img
+                    src={tx.receiptImage}
+                    alt={tx.note || tx.category}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-slate-900/15" />
+
+                  <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded-full border border-white/20 bg-slate-900/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: meta ? meta.color : '#f59e0b' }} />
+                    <span>{tx.category}</span>
+                  </div>
+
+                  <div className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/85 text-white shadow-md">
+                    <Heart className="h-3.5 w-3.5 fill-white" />
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                    <div className="text-lg font-black tracking-tight">{formatVND(tx.amount)}</div>
+                    <div className="truncate text-xs font-semibold text-white/90">{tx.note || tx.category}</div>
+                  </div>
+
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 group-hover:opacity-100">
+                    <div className="flex items-center gap-2 rounded-2xl border border-white/30 bg-slate-950/40 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+                      <Eye className="h-4 w-4" />
+                      <span>Xem Locket</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between px-1 pt-3 text-xs text-slate-500">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    {formatDateVN(tx.date)}
+                  </span>
+                  <span className="font-bold text-amber-700">Xem chi tiết →</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -39,7 +172,6 @@ interface TransactionModalProps {
   } | null;
 }
 
-// Preset sample Locket-style images for testing
 const PRESET_PHOTOS = [
   {
     name: '🍜 Bát bún bò',
@@ -77,10 +209,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [note, setNote] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [receiptImage, setReceiptImage] = useState<string | undefined>(undefined);
-
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Strict Validation states
   const [errors, setErrors] = useState<{
     amount?: string;
     category?: string;
@@ -109,7 +239,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setReceiptImage(undefined);
       setErrors({});
     } else {
-      // Reset
       setType('expense');
       setAmountStr('');
       setCategory('Ăn uống');
@@ -121,7 +250,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
   }, [initialData, prefill, isOpen]);
 
-  // Handle Image Upload & Compression
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -159,22 +287,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Real-time amount validator
   const validateAmount = (val: string): string | undefined => {
-    if (!val || val.trim() === '') {
-      return 'Vui lòng nhập số tiền.';
-    }
-    // Check if contains non-digit characters except minus sign for test
-    if (/[a-zA-Z]/.test(val)) {
-      return 'Số tiền không hợp lệ. Không được chứa chữ cái!';
-    }
+    if (!val || val.trim() === '') return 'Vui lòng nhập số tiền.';
+    if (/[a-zA-Z]/.test(val)) return 'Số tiền không hợp lệ. Không được chứa chữ cái!';
     const num = Number(val);
-    if (isNaN(num)) {
-      return 'Số tiền không phải là một con số hợp lệ.';
-    }
-    if (num <= 0) {
-      return 'Số tiền phải lớn hơn 0 (không được âm hoặc bằng 0).';
-    }
+    if (isNaN(num)) return 'Số tiền không phải là một con số hợp lệ.';
+    if (num <= 0) return 'Số tiền phải lớn hơn 0 (không được âm hoặc bằng 0).';
     return undefined;
   };
 
@@ -184,17 +302,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     const amountErr = validateAmount(amountStr);
     const newErrors: { amount?: string; category?: string; date?: string; general?: string } = {};
 
-    if (amountErr) {
-      newErrors.amount = amountErr;
-    }
-
-    if (!category.trim()) {
-      newErrors.category = 'Vui lòng chọn danh mục giao dịch.';
-    }
-
-    if (!date) {
-      newErrors.date = 'Vui lòng chọn ngày giao dịch.';
-    }
+    if (amountErr) newErrors.amount = amountErr;
+    if (!category.trim()) newErrors.category = 'Vui lòng chọn danh mục giao dịch.';
+    if (!date) newErrors.date = 'Vui lòng chọn ngày giao dịch.';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -226,7 +336,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
   };
 
-  // Demo Error Cases for Defense
   const handleTriggerNegativeAmountDemo = () => {
     setAmountStr('-50000');
     setErrors({ amount: 'Số tiền phải lớn hơn 0 (không được âm hoặc bằng 0).' });
@@ -250,110 +359,66 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     setErrors({});
   };
 
-  // Filter categories by type
-  const availableCategories = CATEGORIES.filter(
-    (c) => c.type === 'both' || c.type === type
-  );
+  const availableCategories = CATEGORIES.filter((c) => c.type === 'both' || c.type === type);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="relative bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-scale-up">
-        
-        {/* Header */}
-        <div className="px-6 py-4.5 bg-slate-50/80 border-b border-slate-200/80 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className={`p-2 rounded-xl ${type === 'income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-              <PlusCircle className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_30px_80px_-28px_rgba(15,23,42,0.7)]">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${type === 'income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+              <PlusCircle className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-slate-900">
+              <h3 className="text-base font-black text-slate-900">
                 {initialData ? 'Chỉnh sửa Giao dịch' : 'Thêm Giao dịch Mới'}
               </h3>
-              <p className="text-xs text-slate-500">
-                Ghi chép thu chi hàng ngày có kiểm tra dữ liệu chặt chẽ
-              </p>
+              <p className="text-xs text-slate-500">Ghi chép thu chi hàng ngày có kiểm tra dữ liệu chặt chẽ</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition"
+            className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Defense Demo Toolbar - 1-Click Error Simulation */}
-        <div className="px-6 pt-3 pb-2 bg-amber-50/70 border-b border-amber-200/70">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 mb-1.5">
-            <FlaskConical className="w-3.5 h-3.5 text-amber-600" />
-            <span>Thử nghiệm Validate Nhanh (Dành cho Giảng viên Chấm điểm):</span>
+        <div className="border-b border-amber-200 bg-amber-50/75 px-6 py-3">
+          <div className="mb-2 flex items-center gap-1.5 text-xs font-black text-amber-800">
+            <FlaskConical className="h-3.5 w-3.5 text-amber-600" />
+            <span>Thử nghiệm Validate Nhanh:</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={handleTriggerNegativeAmountDemo}
-              className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 transition"
-              title="Thử nhập số tiền âm để kiểm tra thông báo lỗi đỏ"
-            >
-              ❌ Thử số âm (-50k)
-            </button>
-            <button
-              type="button"
-              onClick={handleTriggerLetterInAmountDemo}
-              className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 transition"
-              title="Thử nhập chữ cái vào ô số tiền"
-            >
-              ❌ Thử nhập chữ ("nammuoik")
-            </button>
-            <button
-              type="button"
-              onClick={handleTriggerEmptyCategoryDemo}
-              className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 transition"
-              title="Thử bỏ trống danh mục"
-            >
-              ⚠️ Thử bỏ trống danh mục
-            </button>
-            <button
-              type="button"
-              onClick={handleTriggerOverBudgetDemo}
-              className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 transition"
-              title="Thử chi tiêu lớn để kích hoạt cảnh báo vượt ngân sách"
-            >
-              ⚡ Thử chi vượt ngân sách (3tr)
-            </button>
+            <button type="button" onClick={handleTriggerNegativeAmountDemo} className="rounded-lg border border-rose-300 bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-800 transition hover:bg-rose-200">❌ Thử số âm (-50k)</button>
+            <button type="button" onClick={handleTriggerLetterInAmountDemo} className="rounded-lg border border-rose-300 bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-800 transition hover:bg-rose-200">❌ Thử chữ</button>
+            <button type="button" onClick={handleTriggerEmptyCategoryDemo} className="rounded-lg border border-amber-300 bg-amber-100 px-2 py-1 text-[11px] font-bold text-amber-800 transition hover:bg-amber-200">⚠️ Bỏ trống danh mục</button>
+            <button type="button" onClick={handleTriggerOverBudgetDemo} className="rounded-lg border border-violet-300 bg-violet-100 px-2 py-1 text-[11px] font-bold text-violet-800 transition hover:bg-violet-200">⚡ Chi vượt ngân sách</button>
           </div>
         </div>
 
-        {/* General Error Banner */}
         {errors.general && (
-          <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="mx-6 mt-4 flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errors.general}</span>
           </div>
         )}
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
-          {/* Transaction Type Segmented Toggle */}
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+            <label className="mb-1.5 block text-[11px] font-black uppercase tracking-[0.14em] text-slate-500">
               Loại giao dịch
             </label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1">
               <button
                 type="button"
                 onClick={() => {
                   setType('expense');
                   setCategory('Ăn uống');
                 }}
-                className={`py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                  type === 'expense'
-                    ? 'bg-rose-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`rounded-xl py-2.5 text-xs font-black transition ${type === 'expense' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
               >
-                <span>Chi tiêu (-)</span>
+                Chi tiêu (-)
               </button>
               <button
                 type="button"
@@ -361,20 +426,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   setType('income');
                   setCategory('Lương');
                 }}
-                className={`py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                  type === 'income'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`rounded-xl py-2.5 text-xs font-black transition ${type === 'income' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
               >
-                <span>Thu nhập (+)</span>
+                Thu nhập (+)
               </button>
             </div>
           </div>
 
-          {/* Amount Input with Strict Validation Feedback */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+            <label className="mb-1 block text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
               Số tiền (VNĐ) <span className="text-rose-600">*</span>
             </label>
             <div className="relative">
@@ -384,46 +444,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 onChange={(e) => {
                   const val = e.target.value;
                   setAmountStr(val);
-                  const err = validateAmount(val);
-                  setErrors((prev) => ({ ...prev, amount: err }));
+                  setErrors((prev) => ({ ...prev, amount: validateAmount(val) }));
                 }}
                 placeholder="Ví dụ: 50000"
-                className={`w-full px-4 py-2.5 rounded-xl border text-base font-bold tracking-tight focus:outline-hidden transition shadow-2xs ${
-                  errors.amount
-                    ? 'border-rose-400 bg-rose-50/50 text-rose-900 focus:ring-2 focus:ring-rose-500'
-                    : 'border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-emerald-500'
-                }`}
+                className={`w-full rounded-2xl border bg-white px-4 py-3 pr-12 text-base font-bold tracking-tight shadow-sm transition ${errors.amount ? 'border-rose-400 bg-rose-50 text-rose-900 focus:ring-2 focus:ring-rose-500' : 'border-slate-300 text-slate-900 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500'}`}
               />
-              <div className="absolute right-3 top-2.5 text-xs font-semibold text-slate-400">
-                VNĐ
-              </div>
+              <span className="absolute right-3 top-3.5 text-xs font-bold text-slate-400">VNĐ</span>
             </div>
-
-            {/* Inline Error Message */}
             {errors.amount ? (
-              <p className="mt-1.5 text-xs text-rose-600 font-semibold flex items-center gap-1 animate-fade-in">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-rose-600">
+                <AlertCircle className="h-3.5 w-3.5" />
                 {errors.amount}
               </p>
             ) : amountStr && !isNaN(Number(amountStr)) && Number(amountStr) > 0 ? (
-              <p className="mt-1 text-xs text-slate-500 font-medium">
-                Tương đương: <strong>{formatVND(Number(amountStr))}</strong>
-              </p>
+              <p className="mt-1 text-xs font-medium text-slate-500">Tương đương: <strong className="text-slate-700">{formatVND(Number(amountStr))}</strong></p>
             ) : null}
           </div>
 
-          {/* Category Selector Grid */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <label className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
                 Danh mục <span className="text-rose-600">*</span>
               </label>
-              <span className="text-xs text-slate-400">
-                Đang chọn: <strong className="text-slate-800">{category || 'Chưa chọn'}</strong>
-              </span>
+              <span className="text-[11px] text-slate-400">Đang chọn: <strong className="text-slate-700">{category || 'Chưa chọn'}</strong></span>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-50 rounded-2xl border border-slate-200">
+            <div className="max-h-40 space-y-1.5 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-2">
               {availableCategories.map((c) => {
                 const isSelected = category === c.name;
                 return (
@@ -434,73 +479,57 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       setCategory(c.name);
                       setErrors((prev) => ({ ...prev, category: undefined }));
                     }}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition text-left ${
-                      isSelected
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'bg-white hover:bg-slate-200/70 text-slate-700 border border-slate-200/80'
-                    }`}
+                    className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs font-semibold transition ${isSelected ? 'bg-slate-900 text-white shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-200/70'}`}
                   >
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: c.color }}
-                    />
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
                     <span className="truncate">{c.name}</span>
                   </button>
                 );
               })}
             </div>
-
             {errors.category && (
-              <p className="mt-1.5 text-xs text-rose-600 font-semibold flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-rose-600">
+                <AlertCircle className="h-3.5 w-3.5" />
                 {errors.category}
               </p>
             )}
           </div>
 
-          {/* Date & Payment Method (Two columns) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              <label className="mb-1 block text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
                 Ngày giao dịch <span className="text-rose-600">*</span>
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => {
-                    setDate(e.target.value);
-                    setErrors((prev) => ({ ...prev, date: undefined }));
-                  }}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 shadow-2xs"
-                />
-              </div>
-              {errors.date && (
-                <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.date}</p>
-              )}
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setErrors((prev) => ({ ...prev, date: undefined }));
+                }}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 shadow-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500"
+              />
+              {errors.date && <p className="mt-1 text-xs font-semibold text-rose-600">{errors.date}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              <label className="mb-1 block text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
                 Phương thức thanh toán
               </label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 shadow-2xs bg-white"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-semibold text-slate-800 shadow-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500"
               >
                 {PAYMENT_METHODS.map((pm) => (
-                  <option key={pm.id} value={pm.id}>
-                    {pm.label}
-                  </option>
+                  <option key={pm.id} value={pm.id}>{pm.label}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Note Input */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+            <label className="mb-1 block text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
               Ghi chú mô tả
             </label>
             <input
@@ -508,88 +537,52 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Ví dụ: Ăn trưa bún bò với bạn cùng phòng..."
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 shadow-2xs"
+              className="w-full rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 shadow-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
-          {/* Locket Photo Capture Section */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50/70 via-orange-50/50 to-amber-50/70 border border-amber-200/80 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-                <Camera className="w-4 h-4 text-amber-600" />
-                <span>Ảnh Locket Lưu Trữ (Món ăn, hóa đơn, kỷ niệm)</span>
+          <div className="rounded-[24px] border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-3.5">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs font-black text-amber-900">
+                <Camera className="h-4 w-4 text-amber-600" />
+                <span>Ảnh Locket lưu trữ</span>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-900">
-                Locket Style
-              </span>
+              <span className="rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-black text-amber-900">Locket style</span>
             </div>
 
-            {/* Hidden file input */}
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              ref={fileInputRef}
-              onChange={handleImageFileChange}
-              className="hidden"
-            />
+            <input type="file" accept="image/*" capture="environment" ref={fileInputRef} onChange={handleImageFileChange} className="hidden" />
 
             {receiptImage ? (
-              <div className="relative aspect-video sm:aspect-2/1 w-full rounded-2xl overflow-hidden bg-slate-900 border-2 border-amber-400 shadow-sm group">
-                <img
-                  src={receiptImage}
-                  alt="Locket preview"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-1.5 rounded-xl bg-white text-slate-900 text-xs font-bold shadow-md hover:bg-slate-100 transition"
-                  >
-                    Chụp lại
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setReceiptImage(undefined)}
-                    className="p-1.5 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition shadow-md"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px] font-bold drop-shadow-md">
+              <div className="group relative overflow-hidden rounded-[20px] border-2 border-amber-300 bg-slate-900">
+                <img src={receiptImage} alt="Locket preview" className="h-52 w-full object-cover" />
+                <div className="absolute inset-0 bg-slate-950/35 opacity-0 transition group-hover:opacity-100" />
+                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-slate-950/80 to-transparent p-3 text-[11px] font-bold text-white">
                   <span>📷 Đã đính kèm ảnh Locket</span>
-                  <button
-                    type="button"
-                    onClick={() => setReceiptImage(undefined)}
-                    className="text-rose-300 hover:text-white underline text-[10px]"
-                  >
-                    Xóa ảnh
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="rounded-xl bg-white px-2.5 py-1 text-slate-900">Chụp lại</button>
+                    <button type="button" onClick={() => setReceiptImage(undefined)} className="rounded-xl bg-rose-600 p-2 text-white"><Trash2 className="h-3.5 w-3.5" /></button>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-3 px-4 rounded-xl border border-dashed border-amber-300 hover:border-amber-500 bg-white hover:bg-amber-50/50 text-amber-800 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-amber-400 bg-white px-4 py-3 text-xs font-black text-amber-800 transition hover:bg-amber-50"
                 >
-                  <Camera className="w-4 h-4 text-amber-600" />
+                  <Camera className="h-4 w-4 text-amber-600" />
                   <span>Chụp ảnh từ máy / Chọn ảnh hóa đơn</span>
                 </button>
 
-                {/* Preset quick sample photos for 1-click preview */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  <span className="text-[11px] text-amber-800/80 font-medium">
-                    Chọn nhanh ảnh mẫu:
-                  </span>
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[11px] font-medium text-amber-800/80">Chọn nhanh ảnh mẫu:</span>
                   {PRESET_PHOTOS.map((p) => (
                     <button
                       key={p.name}
                       type="button"
                       onClick={() => setReceiptImage(p.url)}
-                      className="text-[11px] px-2 py-0.5 rounded-lg bg-white hover:bg-amber-100 text-amber-900 border border-amber-200 transition font-medium"
+                      className="rounded-lg border border-amber-200 bg-white px-2 py-1 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100"
                     >
                       {p.name}
                     </button>
@@ -599,31 +592,719 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             )}
           </div>
 
-          {/* Footer Actions */}
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition"
-            >
-              Hủy bỏ
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs transition ${
-                type === 'income'
-                  ? 'bg-emerald-600 hover:bg-emerald-700'
-                  : 'bg-rose-600 hover:bg-rose-700'
-              }`}
-            >
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-2">
+            <button type="button" onClick={onClose} className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-800">Hủy bỏ</button>
+            <button type="submit" disabled={isSubmitting} className={`rounded-xl px-5 py-2.5 text-xs font-black text-white shadow-sm transition ${type === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}`}>
               {isSubmitting ? 'Đang kiểm tra...' : initialData ? 'Lưu thay đổi' : 'Thêm giao dịch'}
             </button>
           </div>
-
         </form>
-
       </div>
     </div>
   );
 };
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+import React, { useState } from 'react';
+import {
+  ShieldAlert,
+  Edit2,
+  Check,
+  X,
+  AlertTriangle,
+  TrendingDown,
+  Sparkles,
+} from 'lucide-react';
+import { Budget } from '../types';
+import { CATEGORIES, formatVND } from '../utils/constants';
+
+interface BudgetViewProps {
+  budgets: Budget[];
+  currentMonth: string;
+  onUpdateBudget: (category: string, limit: number) => Promise<void>;
+}
+
+export const BudgetView: React.FC<BudgetViewProps> = ({ budgets, currentMonth, onUpdateBudget }) => {
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editLimitStr, setEditLimitStr] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleStartEdit = (budget: Budget) => {
+    setEditingCategory(budget.category);
+    setEditLimitStr(String(budget.limit));
+  };
+
+  const handleSaveEdit = async (category: string) => {
+    const num = Number(editLimitStr);
+    if (isNaN(num) || num < 0) return;
+    setIsSaving(true);
+    try {
+      await onUpdateBudget(category, num);
+      setEditingCategory(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const getProgressColor = (percent: number) => {
+    if (percent >= 100) return 'bg-rose-500';
+    if (percent >= 80) return 'bg-amber-500';
+    return 'bg-emerald-500';
+  };
+
+  const getBadgeClass = (percent: number) => {
+    if (percent >= 100) return 'border-rose-200 bg-rose-100 text-rose-800';
+    if (percent >= 80) return 'border-amber-200 bg-amber-100 text-amber-800';
+    return 'border-emerald-200 bg-emerald-100 text-emerald-800';
+  };
+
+  const overallBudget = budgets.find((b) => b.category === 'ALL');
+  const categoryBudgets = budgets.filter((b) => b.category !== 'ALL');
+
+  return (
+    <div className="space-y-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.38)]">
+      <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+            <ShieldAlert className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900">Quản lý Ngân sách & Hạn mức Chi tiêu</h3>
+            <p className="text-xs text-slate-500">Theo dõi tiến độ chi tiêu tháng {currentMonth} và cảnh báo tự động</p>
+          </div>
+        </div>
+      </div>
+
+      {overallBudget && (
+        <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 p-5 text-white shadow-[0_20px_45px_-22px_rgba(15,23,42,0.85)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.25),transparent_28%)]" />
+          <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-[0.18em] text-indigo-300">Ngân sách Tổng Hàng Tháng (ALL)</span>
+              <div className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+                {editingCategory === 'ALL' ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={editLimitStr}
+                      onChange={(e) => setEditLimitStr(e.target.value)}
+                      className="w-40 rounded-xl bg-white px-3 py-1.5 text-base font-bold text-slate-900"
+                    />
+                    <button onClick={() => handleSaveEdit('ALL')} disabled={isSaving} className="rounded-lg bg-emerald-500 p-1.5 text-white transition hover:bg-emerald-600">
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => setEditingCategory(null)} className="rounded-lg bg-slate-700 p-1.5 text-white transition hover:bg-slate-600">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>{formatVND(overallBudget.limit)}</span>
+                    <button onClick={() => handleStartEdit(overallBudget)} className="rounded-lg p-1 text-indigo-200 transition hover:bg-white/10" title="Chỉnh sửa hạn mức">
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <div>
+                <span className="block text-[11px] text-indigo-200">Đã chi tiêu</span>
+                <span className="text-lg font-black text-rose-300">{formatVND(overallBudget.spent || 0)}</span>
+              </div>
+              <div className="border-l border-indigo-700/80 pl-6">
+                <span className="block text-[11px] text-indigo-200">Còn lại</span>
+                <span className="text-lg font-black text-emerald-300">{formatVND(overallBudget.remaining || 0)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10 mt-4">
+            <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-indigo-200">
+              <span>Tiến độ: {(overallBudget.percent || 0).toFixed(1)}%</span>
+              {overallBudget.isOver && (
+                <span className="flex items-center gap-1 font-black text-rose-300">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  ĐÃ VƯỢT HẠN MỨC!
+                </span>
+              )}
+            </div>
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800/80">
+              <div className={`h-full rounded-full transition-all duration-500 ${overallBudget.isOver ? 'bg-rose-500' : 'bg-emerald-400'}`} style={{ width: `${Math.min(100, Math.max(0, overallBudget.percent || 0))}%` }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <h4 className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Hạn mức theo từng danh mục</h4>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {categoryBudgets.map((b) => {
+            const meta = CATEGORIES.find((c) => c.name === b.category);
+            const isEditing = editingCategory === b.category;
+            const percent = b.percent || 0;
+
+            return (
+              <div key={b.category} className="space-y-3 rounded-[24px] border border-slate-200 bg-slate-50/60 p-4 shadow-sm transition hover:border-slate-300">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <span className="h-3.5 w-3.5 rounded-lg shrink-0" style={{ backgroundColor: meta ? meta.color : '#64748b' }} />
+                    <span className="text-sm font-black text-slate-800">{b.category}</span>
+                  </div>
+                  <span className={`rounded-md border px-2 py-0.5 text-[11px] font-black ${getBadgeClass(percent)}`}>{percent.toFixed(0)}%</span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <span className="block text-[10px] text-slate-400">Đã chi</span>
+                    <span className="text-sm font-black text-slate-900">{formatVND(b.spent || 0)}</span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="block text-[10px] text-slate-400">Hạn mức</span>
+                    {isEditing ? (
+                      <div className="mt-0.5 flex items-center gap-1">
+                        <input type="number" value={editLimitStr} onChange={(e) => setEditLimitStr(e.target.value)} className="w-24 rounded-lg border border-indigo-400 bg-white px-2 py-1 text-right text-xs font-bold text-slate-800" />
+                        <button onClick={() => handleSaveEdit(b.category)} disabled={isSaving} className="rounded-md bg-emerald-600 p-1 text-white hover:bg-emerald-700"><Check className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => setEditingCategory(null)} className="rounded-md bg-slate-200 p-1 text-slate-700 hover:bg-slate-300"><X className="h-3.5 w-3.5" /></button>
+                      </div>
+                    ) : (
+                      <div className="mt-0.5 flex items-center justify-end gap-1">
+                        <span className="text-sm font-black text-slate-700">{formatVND(b.limit)}</span>
+                        <button onClick={() => handleStartEdit(b)} className="rounded-md p-1 text-slate-400 transition hover:bg-white hover:text-indigo-600" title="Sửa hạn mức">
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+                    <div className={`h-full rounded-full transition-all duration-300 ${getProgressColor(percent)}`} style={{ width: `${Math.min(100, Math.max(0, percent))}%` }} />
+                  </div>
+                  <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
+                    <span>
+                      {b.isOver ? (
+                        <span className="font-black text-rose-600">Vượt quá {formatVND((b.spent || 0) - b.limit)}</span>
+                      ) : (
+                        <span>Còn lại {formatVND(b.remaining || 0)}</span>
+                      )}
+                    </span>
+                    <span>Hạn mức tháng</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+import React, { useState } from 'react';
+import { PieChart, BarChart3 } from 'lucide-react';
+import { MonthStats } from '../types';
+import { CATEGORIES, formatVND } from '../utils/constants';
+
+interface ChartsViewProps {
+  stats: MonthStats | null;
+  currentMonth: string;
+}
+
+export const ChartsView: React.FC<ChartsViewProps> = ({ stats, currentMonth }) => {
+  const [activeSlice, setActiveSlice] = useState<number | null>(null);
+
+  if (!stats) {
+    return <div className="rounded-[28px] border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Đang tải dữ liệu biểu đồ thống kê...</div>;
+  }
+
+  const { summary, categories, dailyStats } = stats;
+  const totalExpense = summary.totalExpense;
+  const radius = 78;
+  const strokeWidth = 30;
+  const center = 110;
+  const circumference = 2 * Math.PI * radius;
+
+  let cumulativePercent = 0;
+  const slices = categories.map((cat, idx) => {
+    const startPercent = cumulativePercent;
+    const catPercent = totalExpense > 0 ? cat.amount / totalExpense : 0;
+    cumulativePercent += catPercent;
+
+    const strokeDasharray = `${catPercent * circumference} ${circumference}`;
+    const strokeDashoffset = -startPercent * circumference;
+    const meta = CATEGORIES.find((c) => c.name === cat.name);
+    const color = meta ? meta.color : '#64748b';
+
+    return {
+      name: cat.name,
+      amount: cat.amount,
+      percentage: Math.round(catPercent * 1000) / 10,
+      color,
+      strokeDasharray,
+      strokeDashoffset,
+      idx,
+    };
+  });
+
+  const hoveredSlice = activeSlice !== null ? slices[activeSlice] : null;
+  const activeDays = dailyStats.filter((d) => d.income > 0 || d.expense > 0);
+  const maxDayAmount = Math.max(...activeDays.map((d) => Math.max(d.income, d.expense)), 1000000);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-5 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)]">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+              <PieChart className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-slate-900">Cơ cấu Chi tiêu</h3>
+              <p className="text-xs text-slate-500">Phân bổ tỷ trọng theo danh mục</p>
+            </div>
+          </div>
+
+          {totalExpense === 0 ? (
+            <div className="py-20 text-center text-xs text-slate-400">Chưa có dữ liệu chi tiêu trong tháng này để vẽ biểu đồ tròn.</div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <div className="relative flex h-56 w-56 items-center justify-center">
+                <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 220 220">
+                  <circle cx={center} cy={center} r={radius} fill="transparent" stroke="#f1f5f9" strokeWidth={strokeWidth} />
+                  {slices.map((slice) => (
+                    <circle
+                      key={slice.name}
+                      cx={center}
+                      cy={center}
+                      r={radius}
+                      fill="transparent"
+                      stroke={slice.color}
+                      strokeWidth={activeSlice === slice.idx ? strokeWidth + 6 : strokeWidth}
+                      strokeDasharray={slice.strokeDasharray}
+                      strokeDashoffset={slice.strokeDashoffset}
+                      className="cursor-pointer transition-all duration-300"
+                      onMouseEnter={() => setActiveSlice(slice.idx)}
+                      onMouseLeave={() => setActiveSlice(null)}
+                    />
+                  ))}
+                </svg>
+
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                  {hoveredSlice ? (
+                    <>
+                      <span className="max-w-[130px] truncate text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">{hoveredSlice.name}</span>
+                      <span className="mt-0.5 text-sm font-black text-slate-900">{formatVND(hoveredSlice.amount)}</span>
+                      <span className="text-xs font-black text-indigo-600">{hoveredSlice.percentage}%</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">Tổng chi</span>
+                      <span className="mt-0.5 text-sm font-black text-slate-900">{formatVND(totalExpense)}</span>
+                      <span className="text-[11px] text-slate-400">{categories.length} danh mục</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 w-full space-y-2 pr-1">
+                {slices.map((slice) => (
+                  <div key={slice.name} onMouseEnter={() => setActiveSlice(slice.idx)} onMouseLeave={() => setActiveSlice(null)} className={`flex cursor-pointer items-center justify-between rounded-2xl p-2 text-xs transition ${activeSlice === slice.idx ? 'bg-slate-100' : 'hover:bg-slate-50'}`}>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: slice.color }} />
+                      <span className="truncate text-slate-700">{slice.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-black text-slate-800">{formatVND(slice.amount)}</span>
+                      <span className="w-10 text-right font-bold text-slate-400">{slice.percentage}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-7 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)]">
+          <div className="mb-6 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">Thu nhập vs Chi tiêu theo Ngày</h3>
+                <p className="text-xs text-slate-500">Biểu đồ cột trực quan biến động dòng tiền tháng {currentMonth}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-xs font-semibold">
+              <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-emerald-500" /> <span className="text-slate-700">Thu nhập</span></div>
+              <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-rose-500" /> <span className="text-slate-700">Chi tiêu</span></div>
+            </div>
+          </div>
+
+          {activeDays.length === 0 ? (
+            <div className="py-24 text-center text-xs text-slate-400">Chưa có giao dịch phát sinh trong tháng này để hiển thị biểu đồ cột.</div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex h-64 items-end gap-2 overflow-x-auto border-b border-slate-200 px-2 pb-2 pt-6">
+                {dailyStats.filter((d) => d.day <= 31 && (d.income > 0 || d.expense > 0)).map((d) => {
+                  const incomeHeight = (d.income / maxDayAmount) * 180;
+                  const expenseHeight = (d.expense / maxDayAmount) * 180;
+
+                  return (
+                    <div key={d.day} className="group relative flex min-w-[36px] flex-1 flex-col items-center">
+                      <div className="pointer-events-none absolute -top-12 z-20 hidden flex-col items-center rounded-lg bg-slate-900 px-2 py-1 text-[10px] text-white shadow-lg group-hover:flex">
+                        <span className="font-black">Ngày {d.day}</span>
+                        {d.income > 0 && <span className="text-emerald-400">Thu: +{formatVND(d.income)}</span>}
+                        {d.expense > 0 && <span className="text-rose-400">Chi: -{formatVND(d.expense)}</span>}
+                      </div>
+
+                      <div className="flex h-48 items-end justify-center gap-1">
+                        <div className="w-2.5 rounded-t-md bg-emerald-500 transition hover:bg-emerald-600 sm:w-3" style={{ height: `${Math.max(4, incomeHeight)}px` }} title={`Thu nhập: +${formatVND(d.income)}`} />
+                        <div className="w-2.5 rounded-t-md bg-rose-500 transition hover:bg-rose-600 sm:w-3" style={{ height: `${Math.max(4, expenseHeight)}px` }} title={`Chi tiêu: -${formatVND(d.expense)}`} />
+                      </div>
+
+                      <span className="mt-2 text-[10px] font-black text-slate-500 group-hover:text-slate-900">N{d.day}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-between px-2 text-[11px] text-slate-400">
+                <span>Trục ngang: Các ngày có phát sinh thu chi</span>
+                <span>Đơn vị: VNĐ</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+import React from 'react';
+import {
+  Camera,
+  Heart,
+  Plus,
+  Eye,
+  Calendar,
+  Sparkles,
+  Image as ImageIcon,
+} from 'lucide-react';
+import { Transaction } from '../types';
+import { formatVND, formatDateVN, CATEGORIES } from '../utils/constants';
+
+interface LocketGalleryViewProps {
+  transactions: Transaction[];
+  onOpenPhotoModal: (tx: Transaction) => void;
+  onOpenAddModal: () => void;
+}
+
+export const LocketGalleryView: React.FC<LocketGalleryViewProps> = ({
+  transactions,
+  onOpenPhotoModal,
+  onOpenAddModal,
+}) => {
+  const photoTransactions = transactions.filter((t) => !!t.receiptImage);
+
+  return (
+    <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 p-6 text-white shadow-[0_28px_60px_-30px_rgba(245,158,11,0.9)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_24%)]" />
+        <div className="relative z-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/18 ring-1 ring-white/25 backdrop-blur-sm">
+                <Heart className="h-5 w-5 fill-white" />
+              </div>
+              <h3 className="text-xl font-black tracking-tight">Khoảnh khắc Chi tiêu • Locket Moments</h3>
+              <span className="rounded-full border border-white/25 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-50">
+                {photoTransactions.length} ảnh
+              </span>
+            </div>
+            <p className="max-w-2xl text-xs text-amber-50/90">
+              Lưu giữ hình ảnh món ăn, hóa đơn, đồ mua sắm và những khoảnh khắc chi tiêu mỗi ngày như một diary sống động.
+            </p>
+          </div>
+
+          <button
+            onClick={onOpenAddModal}
+            className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-xs font-black text-amber-700 shadow-[0_15px_30px_-18px_rgba(124,58,237,0.8)] transition hover:-translate-y-0.5"
+          >
+            <Camera className="h-4 w-4" />
+            <span>Chụp ảnh chi tiêu mới</span>
+          </button>
+        </div>
+      </div>
+
+      {photoTransactions.length === 0 ? (
+        <div className="rounded-[30px] border border-slate-200 bg-white p-12 text-center shadow-[0_22px_55px_-30px_rgba(15,23,42,0.35)]">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[22px] bg-amber-50 text-amber-600 shadow-inner">
+            <Camera className="h-8 w-8" />
+          </div>
+          <h4 className="text-base font-black text-slate-800">Chưa có bức ảnh Locket nào được lưu</h4>
+          <p className="mx-auto mt-2 max-w-lg text-xs text-slate-500">
+            Khi thêm giao dịch mới, hãy nhấn <strong>“Chụp ảnh Locket”</strong> để lưu lại món ăn, cốc cà phê, hóa đơn hoặc khoảnh khắc chi tiêu đáng nhớ.
+          </p>
+          <button
+            onClick={onOpenAddModal}
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-black text-white shadow-[0_14px_26px_-18px_rgba(245,158,11,0.9)] transition hover:bg-amber-600"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Ghi chép & chụp ảnh ngay</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          {photoTransactions.map((tx) => {
+            const meta = CATEGORIES.find((c) => c.name === tx.category);
+
+            return (
+              <div
+                key={tx.id}
+                onClick={() => onOpenPhotoModal(tx)}
+                className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_22px_46px_-32px_rgba(15,23,42,0.5)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(15,23,42,0.55)]"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-[22px] bg-slate-900">
+                  <img
+                    src={tx.receiptImage}
+                    alt={tx.note || tx.category}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-slate-900/15" />
+
+                  <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded-full border border-white/20 bg-slate-900/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: meta ? meta.color : '#f59e0b' }} />
+                    <span>{tx.category}</span>
+                  </div>
+
+                  <div className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/85 text-white shadow-md">
+                    <Heart className="h-3.5 w-3.5 fill-white" />
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                    <div className="text-lg font-black tracking-tight">{formatVND(tx.amount)}</div>
+                    <div className="truncate text-xs font-semibold text-white/90">{tx.note || tx.category}</div>
+                  </div>
+
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 group-hover:opacity-100">
+                    <div className="flex items-center gap-2 rounded-2xl border border-white/30 bg-slate-950/40 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+                      <Eye className="h-4 w-4" />
+                      <span>Xem Locket</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between px-1 pt-3 text-xs text-slate-500">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    {formatDateVN(tx.date)}
+                  </span>
+                  <span className="font-bold text-amber-700">Xem chi tiết →</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+import React, { useState } from 'react';
+import { PieChart, BarChart3 } from 'lucide-react';
+import { MonthStats } from '../types';
+import { CATEGORIES, formatVND } from '../utils/constants';
+
+interface ChartsViewProps {
+  stats: MonthStats | null;
+  currentMonth: string;
+}
+
+export const ChartsView: React.FC<ChartsViewProps> = ({ stats, currentMonth }) => {
+  const [activeSlice, setActiveSlice] = useState<number | null>(null);
+
+  if (!stats) {
+    return <div className="rounded-[28px] border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Đang tải dữ liệu biểu đồ thống kê...</div>;
+  }
+
+  const { summary, categories, dailyStats } = stats;
+  const totalExpense = summary.totalExpense;
+  const radius = 78;
+  const strokeWidth = 30;
+  const center = 110;
+  const circumference = 2 * Math.PI * radius;
+
+  let cumulativePercent = 0;
+  const slices = categories.map((cat, idx) => {
+    const startPercent = cumulativePercent;
+    const catPercent = totalExpense > 0 ? cat.amount / totalExpense : 0;
+    cumulativePercent += catPercent;
+
+    const strokeDasharray = `${catPercent * circumference} ${circumference}`;
+    const strokeDashoffset = -startPercent * circumference;
+    const meta = CATEGORIES.find((c) => c.name === cat.name);
+    const color = meta ? meta.color : '#64748b';
+
+    return {
+      name: cat.name,
+      amount: cat.amount,
+      percentage: Math.round(catPercent * 1000) / 10,
+      color,
+      strokeDasharray,
+      strokeDashoffset,
+      idx,
+    };
+  });
+
+  const hoveredSlice = activeSlice !== null ? slices[activeSlice] : null;
+  const activeDays = dailyStats.filter((d) => d.income > 0 || d.expense > 0);
+  const maxDayAmount = Math.max(...activeDays.map((d) => Math.max(d.income, d.expense)), 1000000);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-5 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)]">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+              <PieChart className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-slate-900">Cơ cấu Chi tiêu</h3>
+              <p className="text-xs text-slate-500">Phân bổ tỷ trọng theo danh mục</p>
+            </div>
+          </div>
+
+          {totalExpense === 0 ? (
+            <div className="py-20 text-center text-xs text-slate-400">Chưa có dữ liệu chi tiêu trong tháng này để vẽ biểu đồ tròn.</div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <div className="relative flex h-56 w-56 items-center justify-center">
+                <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 220 220">
+                  <circle cx={center} cy={center} r={radius} fill="transparent" stroke="#f1f5f9" strokeWidth={strokeWidth} />
+                  {slices.map((slice) => (
+                    <circle
+                      key={slice.name}
+                      cx={center}
+                      cy={center}
+                      r={radius}
+                      fill="transparent"
+                      stroke={slice.color}
+                      strokeWidth={activeSlice === slice.idx ? strokeWidth + 6 : strokeWidth}
+                      strokeDasharray={slice.strokeDasharray}
+                      strokeDashoffset={slice.strokeDashoffset}
+                      className="cursor-pointer transition-all duration-300"
+                      onMouseEnter={() => setActiveSlice(slice.idx)}
+                      onMouseLeave={() => setActiveSlice(null)}
+                    />
+                  ))}
+                </svg>
+
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                  {hoveredSlice ? (
+                    <>
+                      <span className="max-w-[130px] truncate text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">{hoveredSlice.name}</span>
+                      <span className="mt-0.5 text-sm font-black text-slate-900">{formatVND(hoveredSlice.amount)}</span>
+                      <span className="text-xs font-black text-indigo-600">{hoveredSlice.percentage}%</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">Tổng chi</span>
+                      <span className="mt-0.5 text-sm font-black text-slate-900">{formatVND(totalExpense)}</span>
+                      <span className="text-[11px] text-slate-400">{categories.length} danh mục</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 w-full space-y-2 pr-1">
+                {slices.map((slice) => (
+                  <div key={slice.name} onMouseEnter={() => setActiveSlice(slice.idx)} onMouseLeave={() => setActiveSlice(null)} className={`flex cursor-pointer items-center justify-between rounded-2xl p-2 text-xs transition ${activeSlice === slice.idx ? 'bg-slate-100' : 'hover:bg-slate-50'}`}>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: slice.color }} />
+                      <span className="truncate text-slate-700">{slice.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-black text-slate-800">{formatVND(slice.amount)}</span>
+                      <span className="w-10 text-right font-bold text-slate-400">{slice.percentage}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-7 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)]">
+          <div className="mb-6 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">Thu nhập vs Chi tiêu theo Ngày</h3>
+                <p className="text-xs text-slate-500">Biểu đồ cột trực quan biến động dòng tiền tháng {currentMonth}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-xs font-semibold">
+              <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-emerald-500" /> <span className="text-slate-700">Thu nhập</span></div>
+              <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-md bg-rose-500" /> <span className="text-slate-700">Chi tiêu</span></div>
+            </div>
+          </div>
+
+          {activeDays.length === 0 ? (
+            <div className="py-24 text-center text-xs text-slate-400">Chưa có giao dịch phát sinh trong tháng này để hiển thị biểu đồ cột.</div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex h-64 items-end gap-2 overflow-x-auto border-b border-slate-200 px-2 pb-2 pt-6">
+                {dailyStats.filter((d) => d.day <= 31 && (d.income > 0 || d.expense > 0)).map((d) => {
+                  const incomeHeight = (d.income / maxDayAmount) * 180;
+                  const expenseHeight = (d.expense / maxDayAmount) * 180;
+
+                  return (
+                    <div key={d.day} className="group relative flex min-w-[36px] flex-1 flex-col items-center">
+                      <div className="pointer-events-none absolute -top-12 z-20 hidden flex-col items-center rounded-lg bg-slate-900 px-2 py-1 text-[10px] text-white shadow-lg group-hover:flex">
+                        <span className="font-black">Ngày {d.day}</span>
+                        {d.income > 0 && <span className="text-emerald-400">Thu: +{formatVND(d.income)}</span>}
+                        {d.expense > 0 && <span className="text-rose-400">Chi: -{formatVND(d.expense)}</span>}
+                      </div>
+
+                      <div className="flex h-48 items-end justify-center gap-1">
+                        <div className="w-2.5 rounded-t-md bg-emerald-500 transition hover:bg-emerald-600 sm:w-3" style={{ height: `${Math.max(4, incomeHeight)}px` }} title={`Thu nhập: +${formatVND(d.income)}`} />
+                        <div className="w-2.5 rounded-t-md bg-rose-500 transition hover:bg-rose-600 sm:w-3" style={{ height: `${Math.max(4, expenseHeight)}px` }} title={`Chi tiêu: -${formatVND(d.expense)}`} />
+                      </div>
+
+                      <span className="mt-2 text-[10px] font-black text-slate-500 group-hover:text-slate-900">N{d.day}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-between px-2 text-[11px] text-slate-400">
+                <span>Trục ngang: Các ngày có phát sinh thu chi</span>
+                <span>Đơn vị: VNĐ</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

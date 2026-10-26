@@ -11,6 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 import fs from 'fs';
+import crypto from 'crypto';
 
 const app = express();
 const PORT = 3000;
@@ -21,13 +22,13 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 // Initialize Google GenAI on the server side
 const ai = process.env.GEMINI_API_KEY
   ? new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
+    apiKey: process.env.GEMINI_API_KEY,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
       },
-    })
+    },
+  })
   : null;
 
 // ==========================================
@@ -225,7 +226,7 @@ function dispatchEvent(event: string, payload: any) {
   setTimeout(() => {
     if (event === 'transaction.created' || event === 'transaction.updated') {
       const month = payload.date ? payload.date.slice(0, 7) : currentMonthStr;
-      
+
       // Calculate total spent in this category and overall
       const monthExpenses = transactions.filter(
         (t) => t.type === 'expense' && t.date.startsWith(month)
@@ -303,6 +304,154 @@ app.get('/api/health', (_req: Request, res: Response) => {
   });
 });
 
+// ==========================================
+// AUTHENTICATION (Đăng ký / Đăng nhập)
+// ==========================================
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string; // salt:hash (scrypt)
+  createdAt: string;
+}
+
+const USERS_FILE = path.resolve(__dirname, 'users.json');
+const AUTH_SECRET = process.env.AUTH_SECRET || 'fintrack-dev-secret-change-me';
+const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 ngày
+
+let users: User[] = [];
+try {
+  if (fs.existsSync(USERS_FILE)) {
+    users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
+  }
+} catch (e) {
+  console.error('Không đọc được users.json:', e);
+}
+const saveUsers = () => {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Không ghi được users.json:', e);
+  }
+};
+
+const hashPassword = (password: string): string => {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+};
+
+const verifyPassword = (password: string, stored: string): boolean => {
+  const [salt, hash] = stored.split(':');
+  if (!salt || !hash) return false;
+  const test = crypto.scryptSync(password, salt, 64);
+  const orig = Buffer.from(hash, 'hex');
+  return orig.length === test.length && crypto.timingSafeEqual(orig, test);
+};
+
+const signToken = (userId: string): string => {
+  const payload = Buffer.from(JSON.stringify({ uid: userId, exp: Date.now() + TOKEN_TTL_MS })).toString('base64url');
+  const sig = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
+};
+
+const verifyToken = (token: string): string | null => {
+  const [payload, sig] = token.split('.');
+  if (!payload || !sig) return null;
+  const expected = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('base64url');
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
+    if (!data.exp || data.exp < Date.now()) return null;
+    return data.uid as string;
+  } catch {
+    return null;
+  }
+};
+
+const publicUser = (u: User) => ({ id: u.id, name: u.name, email: u.email });
+
+// Middleware: chặn request nếu chưa đăng nhập
+const requireAuth = (req: Request, res: Response, next: () => void) => {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  const uid = token ? verifyToken(token) : null;
+  const user = uid ? users.find((u) => u.id === uid) : undefined;
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Vui lòng đăng nhập để thực hiện thao tác này.',
+    });
+  }
+  (req as any).user = user;
+  next();
+};
+
+// Đăng ký
+app.post('/api/auth/register', (req: Request, res: Response) => {
+  const { name, email, password } = req.body || {};
+  const errors: Record<string, string> = {};
+
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    errors.name = 'Vui lòng nhập họ tên.';
+  }
+  const emailNorm = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (!emailNorm || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm)) {
+    errors.email = 'Email không hợp lệ.';
+  } else if (users.some((u) => u.email === emailNorm)) {
+    errors.email = 'Email này đã được đăng ký.';
+  }
+  if (!password || typeof password !== 'string' || password.length < 6) {
+    errors.password = 'Mật khẩu phải có ít nhất 6 ký tự.';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({ success: false, message: 'Thông tin đăng ký không hợp lệ!', errors });
+  }
+
+  const user: User = {
+    id: `u-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    name: name.trim(),
+    email: emailNorm,
+    passwordHash: hashPassword(password),
+    createdAt: new Date().toISOString(),
+  };
+  users.push(user);
+  saveUsers();
+
+  res.status(201).json({
+    success: true,
+    message: 'Đăng ký thành công!',
+    token: signToken(user.id),
+    user: publicUser(user),
+  });
+});
+
+// Đăng nhập
+app.post('/api/auth/login', (req: Request, res: Response) => {
+  const { email, password } = req.body || {};
+  const emailNorm = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const user = users.find((u) => u.email === emailNorm);
+
+  if (!user || typeof password !== 'string' || !verifyPassword(password, user.passwordHash)) {
+    return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng.' });
+  }
+
+  res.json({
+    success: true,
+    message: 'Đăng nhập thành công!',
+    token: signToken(user.id),
+    user: publicUser(user),
+  });
+});
+
+// Lấy thông tin người dùng hiện tại (dùng để khôi phục phiên khi F5)
+app.get('/api/auth/me', requireAuth, (req: Request, res: Response) => {
+  res.json({ success: true, user: publicUser((req as any).user as User) });
+});
+
 // 2. Transactions: GET list with optional filters (month, category, type, search)
 app.get('/api/transactions', (req: Request, res: Response) => {
   const { month, category, type, search } = req.query;
@@ -338,7 +487,7 @@ app.get('/api/transactions', (req: Request, res: Response) => {
 });
 
 // 3. Transactions: POST create with rigorous validation
-app.post('/api/transactions', (req: Request, res: Response) => {
+app.post('/api/transactions', requireAuth, (req: Request, res: Response) => {
   const { amount, type, category, date, note, paymentMethod, receiptImage } = req.body;
   const errors: Record<string, string> = {};
 
@@ -398,7 +547,7 @@ app.post('/api/transactions', (req: Request, res: Response) => {
 });
 
 // 4. Transactions: PUT update
-app.put('/api/transactions/:id', (req: Request, res: Response) => {
+app.put('/api/transactions/:id', requireAuth, (req: Request, res: Response) => {
   const { id } = req.params;
   const index = transactions.findIndex((t) => t.id === id);
 
@@ -461,7 +610,7 @@ app.put('/api/transactions/:id', (req: Request, res: Response) => {
 });
 
 // 5. Transactions: DELETE
-app.delete('/api/transactions/:id', (req: Request, res: Response) => {
+app.delete('/api/transactions/:id', requireAuth, (req: Request, res: Response) => {
   const { id } = req.params;
   const initialLength = transactions.length;
   transactions = transactions.filter((t) => t.id !== id);
@@ -511,8 +660,8 @@ app.get('/api/budgets', (req: Request, res: Response) => {
       b.category === 'ALL'
         ? totalSpent
         : monthExpenses
-            .filter((t) => t.category === b.category)
-            .reduce((sum, t) => sum + t.amount, 0);
+          .filter((t) => t.category === b.category)
+          .reduce((sum, t) => sum + t.amount, 0);
 
     const percent = b.limit > 0 ? (spent / b.limit) * 100 : 0;
     const isOver = spent > b.limit;
@@ -694,7 +843,7 @@ app.post('/api/ai/classify', async (req: Request, res: Response) => {
       type = 'income';
       if (lower.includes('lương')) category = 'Lương';
       else category = 'Thưởng & Làm thêm';
-    } 
+    }
     // 2. Transportation (Check before food to prevent "xăng" matching "ăn")
     else if (
       lower.includes('xăng') ||

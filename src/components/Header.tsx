@@ -7,7 +7,11 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  LogIn,
+  LogOut,
+  UserPlus,
 } from 'lucide-react';
+import { AuthUser } from '../services/auth';
 
 interface HeaderProps {
   currentMonth: string;
@@ -15,6 +19,10 @@ interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenAIQuick: () => void;
   onResetData: () => void;
+  user: AuthUser | null;
+  onLogin: () => void;
+  onRegister: () => void;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -23,6 +31,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenAIQuick,
   onResetData,
+  user,
+  onLogin,
+  onRegister,
+  onLogout,
 }) => {
   // Format currentMonth (e.g. "2026-10" -> "Tháng 10, 2026")
   const formatMonthTitle = (mStr: string) => {
@@ -52,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between py-3.5 gap-3">
-          
+
           {/* Logo & Project Tag */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -138,6 +150,39 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <RotateCcw className="w-4 h-4" />
             </button>
+
+            {/* Auth: Đăng nhập / Đăng ký / Đăng xuất */}
+            {user ? (
+              <div className="inline-flex items-center gap-2 pl-3 pr-1.5 py-1 rounded-xl bg-slate-100 border border-slate-200">
+                <span className="text-xs font-bold text-slate-700 max-w-[120px] truncate" title={user.email}>
+                  👋 {user.name}
+                </span>
+                <button
+                  onClick={onLogout}
+                  className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-white rounded-lg transition"
+                  title="Đăng xuất"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={onLogin}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Đăng nhập</span>
+                </button>
+                <button
+                  onClick={onRegister}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Đăng ký</span>
+                </button>
+              </>
+            )}
 
             {/* Add Transaction Main Button */}
             <button

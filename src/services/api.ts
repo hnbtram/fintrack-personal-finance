@@ -6,8 +6,58 @@ import {
   QueueResponse,
   TestSuiteResponse,
 } from '../types';
+import { authStore, authHeaders, handleUnauthorized, AuthUser } from './auth';
 
 export const api = {
+  // 0. Auth
+  async register(name: string, email: string, password: string): Promise<AuthUser> {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const err = new Error(data.message || 'Đăng ký thất bại') as any;
+      err.errors = data.errors;
+      throw err;
+    }
+    authStore.save(data.token, data.user);
+    return data.user;
+  },
+
+  async login(email: string, password: string): Promise<AuthUser> {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Đăng nhập thất bại');
+    authStore.save(data.token, data.user);
+    return data.user;
+  },
+
+  // Kiểm tra token còn hợp lệ không (dùng khi mở lại trang)
+  async me(): Promise<AuthUser | null> {
+    if (!authStore.getToken()) return null;
+    try {
+      const res = await fetch('/api/auth/me', { headers: authHeaders() });
+      if (!res.ok) {
+        authStore.clear();
+        return null;
+      }
+      const data = await res.json();
+      return data.user;
+    } catch {
+      return authStore.getUser();
+    }
+  },
+
+  logout() {
+    authStore.clear();
+  },
+
   // 1. Get transactions with filters
   async getTransactions(params?: {
     month?: string;
@@ -34,10 +84,11 @@ export const api = {
   }> {
     const res = await fetch('/api/transactions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(tx),
     });
     const data = await res.json();
+    if (res.status === 401) handleUnauthorized();
     if (!res.ok) {
       const err = new Error(data.message || 'Lỗi khi tạo giao dịch') as any;
       err.errors = data.errors;
@@ -53,10 +104,11 @@ export const api = {
   ): Promise<Transaction> {
     const res = await fetch(`/api/transactions/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(tx),
     });
     const data = await res.json();
+    if (res.status === 401) handleUnauthorized();
     if (!res.ok) {
       const err = new Error(data.message || 'Lỗi khi cập nhật giao dịch') as any;
       err.errors = data.errors;
@@ -69,8 +121,10 @@ export const api = {
   async deleteTransaction(id: string): Promise<void> {
     const res = await fetch(`/api/transactions/${id}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
     const data = await res.json();
+    if (res.status === 401) handleUnauthorized();
     if (!res.ok) throw new Error(data.message || 'Lỗi khi xóa giao dịch');
   },
 

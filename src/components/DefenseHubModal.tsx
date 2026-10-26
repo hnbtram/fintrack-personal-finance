@@ -49,7 +49,7 @@ export const DefenseHubModal: React.FC<DefenseHubModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="relative bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col animate-scale-up">
-        
+
         {/* Header */}
         <div className="px-6 py-4.5 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -84,41 +84,37 @@ export const DefenseHubModal: React.FC<DefenseHubModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('slide')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
-                activeTab === 'slide'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${activeTab === 'slide'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                }`}
             >
               1. Cấu trúc Trình bày (15 Phút)
             </button>
             <button
               onClick={() => setActiveTab('tests')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
-                activeTab === 'tests'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${activeTab === 'tests'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                }`}
             >
               2. Bộ Kiểm thử Tự động (Test Runner)
             </button>
             <button
               onClick={() => setActiveTab('checklist')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
-                activeTab === 'checklist'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${activeTab === 'checklist'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                }`}
             >
               3. Checklist Nộp bài & Phân công
             </button>
             <button
               onClick={() => setActiveTab('api')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
-                activeTab === 'api'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${activeTab === 'api'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                }`}
             >
               4. Danh mục REST APIs
             </button>
@@ -127,7 +123,7 @@ export const DefenseHubModal: React.FC<DefenseHubModalProps> = ({
 
         {/* Tab Content */}
         <div className="p-6 overflow-y-auto space-y-6 text-slate-800">
-          
+
           {/* TAB 1: Slide & Presentation Outline */}
           {activeTab === 'slide' && (
             <div className="space-y-4">
@@ -138,7 +134,7 @@ export const DefenseHubModal: React.FC<DefenseHubModalProps> = ({
 
               {/* 15-Minute Outline Breakdown */}
               <div className="space-y-3">
-                
+
                 {/* 1. Problem & User (1 min) */}
                 <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
                   <div className="flex items-center justify-between mb-1.5">

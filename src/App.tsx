@@ -27,7 +27,10 @@ import { ChartsView } from './components/ChartsView';
 import { BudgetView } from './components/BudgetView';
 import { QueueMonitorModal } from './components/QueueMonitorModal';
 import { DefenseHubModal } from './components/DefenseHubModal';
+import { AuthModal } from './components/AuthModal';
+import { WelcomePage } from './components/WelcomePage';
 import { api } from './services/api';
+import { AuthUser, authStore, AUTH_REQUIRED_EVENT } from './services/auth';
 import { Transaction, Budget, MonthStats, TransactionType, PaymentMethod } from './types';
 
 export default function App() {
@@ -59,6 +62,12 @@ export default function App() {
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
   const [isDefenseModalOpen, setIsDefenseModalOpen] = useState(false);
 
+  // Auth State
+  const [user, setUser] = useState<AuthUser | null>(authStore.getUser());
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+
   // Toast Notification
   const [toast, setToast] = useState<{
     type: 'success' | 'warning' | 'error' | 'info';
@@ -70,6 +79,50 @@ export default function App() {
     setTimeout(() => {
       setToast(null);
     }, 4000);
+  };
+
+  // Khôi phục phiên đăng nhập khi mở lại trang (kiểm tra token còn hạn không)
+  useEffect(() => {
+    api.me().then((u) => setUser(u));
+  }, []);
+
+  const openAuth = (mode: 'login' | 'register', message: string | null = null) => {
+    setAuthMode(mode);
+    setAuthMessage(message);
+    setIsAuthOpen(true);
+  };
+
+  // Server trả 401 (token hết hạn / chưa đăng nhập) -> yêu cầu đăng nhập lại
+  useEffect(() => {
+    const onAuthRequired = () => {
+      setUser(null);
+      openAuth('login', 'Vui lòng đăng nhập để tạo hoặc chỉnh sửa giao dịch.');
+    };
+    window.addEventListener(AUTH_REQUIRED_EVENT, onAuthRequired);
+    return () => window.removeEventListener(AUTH_REQUIRED_EVENT, onAuthRequired);
+  }, []);
+
+  // Chặn mở form giao dịch khi chưa đăng nhập (áp dụng cho mọi nút: Giao dịch mới, Sửa, Lịch, Locket...)
+  useEffect(() => {
+    if (isAddModalOpen && !user) {
+      setIsAddModalOpen(false);
+      setEditingTransaction(null);
+      setAiPrefill(null);
+      openAuth('login', 'Bạn cần đăng nhập để tạo giao dịch.');
+    }
+  }, [isAddModalOpen, user]);
+
+  const handleAuthSuccess = (u: AuthUser) => {
+    setUser(u);
+    setIsAuthOpen(false);
+    setAuthMessage(null);
+    showToast(`Xin chào ${u.name}!`, 'success');
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setUser(null);
+    showToast('Đã đăng xuất.', 'info');
   };
 
   // Fetch all data for current month
@@ -101,8 +154,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    loadData(currentMonth);
-  }, [currentMonth, loadData]);
+    if (user) loadData(currentMonth);
+  }, [currentMonth, loadData, user]);
 
   // Handle saving transaction (Create or Update)
   const handleSaveTransaction = async (txData: {
@@ -166,25 +219,43 @@ export default function App() {
     }
   };
 
+  // Chưa đăng nhập: hiện trang chào mừng, bấm nút mới mở form đăng nhập/đăng ký
+  if (!user) {
+    return (
+      <>
+        <WelcomePage
+          onLogin={() => openAuth('login')}
+          onRegister={() => openAuth('register')}
+        />
+        <AuthModal
+          isOpen={isAuthOpen}
+          initialMode={authMode}
+          message={authMessage}
+          onClose={() => setIsAuthOpen(false)}
+          onSuccess={handleAuthSuccess}
+        />
+      </>
+    );
+  }
+
   // Count active budget alerts for badge in header
   const overBudgetsCount = budgets.filter((b) => b.isOver).length;
 
   return (
     <div className="min-h-screen bg-slate-50/70 text-slate-800 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      
+
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-5 right-5 z-50 animate-bounce">
           <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold border ${
-              toast.type === 'success'
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold border ${toast.type === 'success'
                 ? 'bg-emerald-600 text-white border-emerald-500'
                 : toast.type === 'warning'
-                ? 'bg-amber-500 text-slate-900 border-amber-400'
-                : toast.type === 'error'
-                ? 'bg-rose-600 text-white border-rose-500'
-                : 'bg-slate-800 text-white border-slate-700'
-            }`}
+                  ? 'bg-amber-500 text-slate-900 border-amber-400'
+                  : toast.type === 'error'
+                    ? 'bg-rose-600 text-white border-rose-500'
+                    : 'bg-slate-800 text-white border-slate-700'
+              }`}
           >
             {toast.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
             {toast.type === 'warning' && <AlertTriangle className="w-4 h-4" />}
@@ -211,11 +282,15 @@ export default function App() {
           }
         }}
         onResetData={handleResetData}
+        user={user}
+        onLogin={() => openAuth('login')}
+        onRegister={() => openAuth('register')}
+        onLogout={handleLogout}
       />
 
       {/* Main Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        
+
         {/* Error notification if any */}
         {error && (
           <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between">
@@ -260,11 +335,10 @@ export default function App() {
             {/* Tab 1: Danh sách Giao dịch */}
             <button
               onClick={() => setActiveTab('transactions')}
-              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${
-                activeTab === 'transactions'
+              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'transactions'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
+                }`}
             >
               <ListOrdered className="w-4 h-4" />
               <span>Giao dịch ({transactions.length})</span>
@@ -273,11 +347,10 @@ export default function App() {
             {/* Tab 2: Dạng xem theo Lịch */}
             <button
               onClick={() => setActiveTab('calendar')}
-              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${
-                activeTab === 'calendar'
+              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'calendar'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
+                }`}
             >
               <CalendarIcon className="w-4 h-4" />
               <span>Lịch Chi tiêu</span>
@@ -286,11 +359,10 @@ export default function App() {
             {/* Tab 3: Locket Ảnh Khoảnh khắc */}
             <button
               onClick={() => setActiveTab('locket')}
-              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${
-                activeTab === 'locket'
+              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'locket'
                   ? 'bg-amber-500 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
+                }`}
             >
               <Camera className="w-4 h-4 text-amber-500" />
               <span>Ảnh Locket ({transactions.filter((t) => !!t.receiptImage).length})</span>
@@ -299,11 +371,10 @@ export default function App() {
             {/* Tab 4: Biểu đồ Thống kê */}
             <button
               onClick={() => setActiveTab('charts')}
-              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${
-                activeTab === 'charts'
+              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'charts'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
+                }`}
             >
               <PieChart className="w-4 h-4" />
               <span>Biểu đồ Thống kê</span>
@@ -312,11 +383,10 @@ export default function App() {
             {/* Tab 5: Ngân sách */}
             <button
               onClick={() => setActiveTab('budgets')}
-              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${
-                activeTab === 'budgets'
+              className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'budgets'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
+                }`}
             >
               <ShieldAlert className="w-4 h-4" />
               <span>Ngân sách & Hạn mức</span>
@@ -429,6 +499,15 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal (Đăng nhập / Đăng ký) */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        initialMode={authMode}
+        message={authMessage}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
 
       {/* Transaction Add/Edit Modal */}
       <TransactionModal
